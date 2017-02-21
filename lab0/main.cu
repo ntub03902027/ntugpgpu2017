@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include "SyncedMemory.h"
 
 #define CHECK {\
@@ -13,19 +14,27 @@
 const int W = 40;
 const int H = 12;
 
+
+
+
 __global__ void Draw(char *frame) {
 	// TODO: draw more complex things here
 	// Do not just submit the original file provided by the TA!
 	const int y = blockIdx.y * blockDim.y + threadIdx.y;
 	const int x = blockIdx.x * blockDim.x + threadIdx.x;
-	if (y < H and x < W) {
+	if (y < H && x < W) {
 		char c;
+		//char drawing[] = "::::::::::::::::::::::::::::::::::::::: :                                     : :                                     : :                                     : :                                     : :                 ####          <|    : :               ######           |    : :             ########           |    : :           ##########           |    : :         ############           |    : :       ##############           #    : ::::::::::::::::::::::::::::::::::::::: ";
+		char drawing[] = "   MARIO             WORLD    TIME      001126    $x25     1-1      127                                                                                              ####          <|                   ######           |                 ########           |               ##########           |             ############           |           ##############           #    ";
 		if (x == W-1) {
 			c = y == H-1 ? '\0' : '\n';
-		} else if (y == 0 or y == H-1 or x == 0 or x == W-2) {
+		} else if (y == 0 || y == H-1 || x == 0 || x == W-2) {
 			c = ':';
 		} else {
-			c = ' ';
+			c = drawing[(y-1)*(W-3)+(x-1)];
+
+
+			//c = ' ';
 		}
 		frame[y*W+x] = c;
 	}
