@@ -34,14 +34,14 @@ __global__ void fillNaive(const char *text, int *pos, const int text_size) {
 	pos[x] = x - i;
 }
 
-__global__ void copyFillTable(const char *text, int *binary_index_tree_table, const int text_size, const int treeLevel) {
+__global__ void copyFillTable(const char *text, int *binary_index_tree_table, const int text_size, const int index) {
 	const int x = blockIdx.x * blockDim.x + threadIdx.x;
 	if (x < text_size && text[x] != '\n') {
-		binary_index_tree_table[x + (int)exp2((double)treeLevel)] = 1;
+		binary_index_tree_table[x + index] = 1;
 		binary_index_tree_table[x] = 0;
 	}
-	else if (x < (int)exp2((double)treeLevel)) {
-		binary_index_tree_table[x + (int)exp2((double)treeLevel)] = 0;
+	else if (x < index) {
+		binary_index_tree_table[x + index] = 0;
 		binary_index_tree_table[x] = 0;
 	}
 }
@@ -142,7 +142,7 @@ void CountPosition2(const char *text, int *pos, int text_size)
 	SyncedMemory<int> table_sync(binary_index_tree_table_vec.data(), binary_index_tree_table, binary_index_tree_table_vec.size());
 	
 	//cudaMemset(binary_index_tree_table, 0, sizeof(int)* 2 * (int)exp2((double)treeLevel));
-	copyFillTable<<<(half_table_size-1)/nThreads + 1, nThreads>>>(text, table_sync.get_gpu_wo(), text_size, treeLevel);
+	copyFillTable<<<(half_table_size-1)/nThreads + 1, nThreads>>>(text, table_sync.get_gpu_wo(), text_size, (int)exp2((double)treeLevel) );
 
 	int multiplier = 2;
 	for (int i = treeLevel - 1; i >= 0; --i) {
