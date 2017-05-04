@@ -61,38 +61,37 @@ __global__ void fillPos(int *pos, const int *binary_index_tree_table, const int 
 			// maintain 4 values and 2 conditions
 			bool done = false;
 			bool traverse_down = false;
-			int currentDivisor = 1;
+			int currentDivisor = 2;
 			int currentAlign = x;
 			int currentLength = 1;
 			int currentIndex = ((int)exp2f((float)treeLevel) + x);
-			currentDivisor *= 2;
 			while (!done) {
 				if (!traverse_down) {
 					int newAlign = currentAlign;
 					if (currentAlign % currentDivisor != 0)
-						newAlign -= (currentDivisor / 2);
+						newAlign -= (currentDivisor >> 1);
 					if (currentAlign != newAlign) { // Not Already
 						// index -> index - 1, check whether new index isn't 0	
 						currentIndex--;
 						if (binary_index_tree_table[currentIndex] != 0) { // Ok : Index / 2
 							currentLength += binary_index_tree_table[currentIndex];
 							currentAlign = newAlign;
-							currentDivisor *= 2;
-							currentIndex /= 2;
+							currentDivisor <<= 1;
+							currentIndex >>= 1;
 							if (currentIndex == 1)
 								done = true;
 						}
 						else { // Fail, change to traverse_down, align no need to maintain anymore
-							currentDivisor /= 4;
-							currentIndex = currentIndex * 2 + 1;
+							currentDivisor >>= 2;
+							currentIndex = (currentIndex << 1) + 1;
 							traverse_down = true;
 							if (currentDivisor == 0)
 								done = true;
 						}
 					}
 					else { // Already
-						currentDivisor *= 2;
-						currentIndex /= 2;
+						currentDivisor <<= 1;
+						currentIndex >>= 1;
 						if (currentIndex == 1)
 							done = true;
 					}
@@ -101,12 +100,12 @@ __global__ void fillPos(int *pos, const int *binary_index_tree_table, const int 
 				else {
 					if (binary_index_tree_table[currentIndex] != 0) {
 						currentLength += binary_index_tree_table[currentIndex];
-						currentDivisor /= 2;
-						currentIndex = (currentIndex - 1) * 2 + 1;
+						currentDivisor >>= 1;
+						currentIndex = ((currentIndex - 1) << 1) + 1;
 					}
 					else {
-						currentDivisor /= 2;
-						currentIndex = (currentIndex) * 2 + 1;
+						currentDivisor >>= 1;
+						currentIndex = ((currentIndex) << 1) + 1;
 					}
 					if (currentDivisor == 0)
 						done = true;
